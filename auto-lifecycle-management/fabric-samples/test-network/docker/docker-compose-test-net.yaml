@@ -1,0 +1,619 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2.1'
+
+volumes:
+  orderer.automobile-lifecycle.com:
+  peer0.manufacturer.automobile-lifecycle.com:
+  peer1.manufacturer.automobile-lifecycle.com:
+  peer0.dealer.automobile-lifecycle.com:
+  peer1.dealer.automobile-lifecycle.com:
+  peer0.regulator.automobile-lifecycle.com:
+  peer1.regulator.automobile-lifecycle.com:
+  peer0.vehicleowner.automobile-lifecycle.com:
+  peer1.vehicleowner.automobile-lifecycle.com:
+  peer0.carserviceprovider.automobile-lifecycle.com:
+  peer1.carserviceprovider.automobile-lifecycle.com:
+  peer0.insuranceprovider.automobile-lifecycle.com:
+  peer1.insuranceprovider.automobile-lifecycle.com:
+  peer0.scrapmerchant.automobile-lifecycle.com:
+  peer1.scrapmerchant.automobile-lifecycle.com:
+
+networks:
+  test:
+    name: automobile-network
+
+services:
+
+  orderer.automobile-lifecycle.com:
+    container_name: orderer.automobile-lifecycle.com
+    image: hyperledger/fabric-orderer:latest
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_OPERATIONS_LISTENADDRESS=orderer.automobile-lifecycle.com:9443
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+      - ORDERER_KAFKA_VERBOSE=true
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+        - ../system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ../organizations/ordererOrganizations/automobile-lifecycle.com/orderers/orderer.automobile-lifecycle.com/msp:/var/hyperledger/orderer/msp
+        - ../organizations/ordererOrganizations/automobile-lifecycle.com/orderers/orderer.automobile-lifecycle.com/tls/:/var/hyperledger/orderer/tls
+        - orderer.automobile-lifecycle.com:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+      - 9443:9443
+    networks:
+      - test
+
+  peer0.manufacturer.automobile-lifecycle.com:
+    container_name: peer0.manufacturer.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.manufacturer.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer0.manufacturer.automobile-lifecycle.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.manufacturer.automobile-lifecycle.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.manufacturer.automobile-lifecycle.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.manufacturer.automobile-lifecycle.com:7051
+      - CORE_PEER_LOCALMSPID=ManufacturerMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.manufacturer.automobile-lifecycle.com:9444
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/manufacturer.automobile-lifecycle.com/peers/peer0.manufacturer.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/manufacturer.automobile-lifecycle.com/peers/peer0.manufacturer.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.manufacturer.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 7051:7051
+      - 9444:9444
+    networks:
+      - test
+
+
+  peer1.manufacturer.automobile-lifecycle.com:
+    container_name: peer1.manufacturer.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer1.manufacturer.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer1.manufacturer.automobile-lifecycle.com:7151
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7151
+      - CORE_PEER_CHAINCODEADDRESS=peer1.manufacturer.automobile-lifecycle.com:7152
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7152
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.manufacturer.automobile-lifecycle.com:7151
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.manufacturer.automobile-lifecycle.com:7151
+      - CORE_PEER_LOCALMSPID=ManufacturerMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer1.manufacturer.automobile-lifecycle.com:10444
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/manufacturer.automobile-lifecycle.com/peers/peer1.manufacturer.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/manufacturer.automobile-lifecycle.com/peers/peer1.manufacturer.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.manufacturer.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 7151:7151
+      - 10444:10444
+    networks:
+      - test
+
+  peer0.dealer.automobile-lifecycle.com:
+    container_name: peer0.dealer.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.dealer.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer0.dealer.automobile-lifecycle.com:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.dealer.automobile-lifecycle.com:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.dealer.automobile-lifecycle.com:9051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.dealer.automobile-lifecycle.com:9051
+      - CORE_PEER_LOCALMSPID=DealerMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.dealer.automobile-lifecycle.com:9445
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/dealer.automobile-lifecycle.com/peers/peer0.dealer.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/dealer.automobile-lifecycle.com/peers/peer0.dealer.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.dealer.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9051:9051
+      - 9445:9445
+    networks:
+      - test
+
+  
+  peer1.dealer.automobile-lifecycle.com:
+    container_name: peer1.dealer.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer1.dealer.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer1.dealer.automobile-lifecycle.com:9151
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9151
+      - CORE_PEER_CHAINCODEADDRESS=peer1.dealer.automobile-lifecycle.com:9152
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9152
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.dealer.automobile-lifecycle.com:9151
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.dealer.automobile-lifecycle.com:9151
+      - CORE_PEER_LOCALMSPID=DealerMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer1.dealer.automobile-lifecycle.com:10445
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/dealer.automobile-lifecycle.com/peers/peer1.dealer.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/dealer.automobile-lifecycle.com/peers/peer1.dealer.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.dealer.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9151:9151
+      - 10445:10445
+    networks:
+      - test
+
+  peer0.regulator.automobile-lifecycle.com:
+    container_name: peer0.regulator.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.regulator.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer0.regulator.automobile-lifecycle.com:13051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:13051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.regulator.automobile-lifecycle.com:13052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:13052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.regulator.automobile-lifecycle.com:13051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.regulator.automobile-lifecycle.com:13051
+      - CORE_PEER_LOCALMSPID=RegulatorMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.regulator.automobile-lifecycle.com:13445
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/regulator.automobile-lifecycle.com/peers/peer0.regulator.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/regulator.automobile-lifecycle.com/peers/peer0.regulator.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.regulator.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 13051:13051
+      - 13445:13445
+    networks:
+      - test
+
+  
+  peer1.regulator.automobile-lifecycle.com:
+    container_name: peer1.regulator.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer1.regulator.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer1.regulator.automobile-lifecycle.com:13151
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:13151
+      - CORE_PEER_CHAINCODEADDRESS=peer1.regulator.automobile-lifecycle.com:13152
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:13152
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.regulator.automobile-lifecycle.com:13151
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.regulator.automobile-lifecycle.com:13151
+      - CORE_PEER_LOCALMSPID=RegulatorMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer1.regulator.automobile-lifecycle.com:13446
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/regulator.automobile-lifecycle.com/peers/peer1.regulator.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/regulator.automobile-lifecycle.com/peers/peer1.regulator.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.regulator.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 13151:13151
+      - 13446:13446
+    networks:
+      - test
+
+  peer0.vehicleowner.automobile-lifecycle.com:
+    container_name: peer0.vehicleowner.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.vehicleowner.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer0.vehicleowner.automobile-lifecycle.com:9251
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9251
+      - CORE_PEER_CHAINCODEADDRESS=peer0.vehicleowner.automobile-lifecycle.com:9252
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9252
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.vehicleowner.automobile-lifecycle.com:9251
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.vehicleowner.automobile-lifecycle.com:9251
+      - CORE_PEER_LOCALMSPID=VehicleOwnerMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.vehicleowner.automobile-lifecycle.com:10446
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/vehicleowner.automobile-lifecycle.com/peers/peer0.vehicleowner.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/vehicleowner.automobile-lifecycle.com/peers/peer0.vehicleowner.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.vehicleowner.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9251:9251
+      - 10446:10446
+    networks:
+      - test
+
+  peer1.vehicleowner.automobile-lifecycle.com:
+    container_name: peer1.vehicleowner.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer1.vehicleowner.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer1.vehicleowner.automobile-lifecycle.com:9351
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9351
+      - CORE_PEER_CHAINCODEADDRESS=peer1.vehicleowner.automobile-lifecycle.com:9352
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9352
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.vehicleowner.automobile-lifecycle.com:9351
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.vehicleowner.automobile-lifecycle.com:9351
+      - CORE_PEER_LOCALMSPID=VehicleOwnerMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer1.vehicleowner.automobile-lifecycle.com:10447
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/vehicleowner.automobile-lifecycle.com/peers/peer1.vehicleowner.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/vehicleowner.automobile-lifecycle.com/peers/peer1.vehicleowner.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.vehicleowner.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9351:9351
+      - 10447:10447
+    networks:
+      - test
+    
+  peer0.carserviceprovider.automobile-lifecycle.com:
+    container_name: peer0.carserviceprovider.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.carserviceprovider.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer0.carserviceprovider.automobile-lifecycle.com:9451
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9451
+      - CORE_PEER_CHAINCODEADDRESS=peer0.carserviceprovider.automobile-lifecycle.com:9452
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9452
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.carserviceprovider.automobile-lifecycle.com:9451
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.carserviceprovider.automobile-lifecycle.com:9451
+      - CORE_PEER_LOCALMSPID=CarServiceProviderMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.carserviceprovider.automobile-lifecycle.com:10448
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/carserviceprovider.automobile-lifecycle.com/peers/peer0.carserviceprovider.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/carserviceprovider.automobile-lifecycle.com/peers/peer0.carserviceprovider.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.carserviceprovider.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9451:9451
+      - 10448:10448
+    networks:
+      - test
+
+  peer1.carserviceprovider.automobile-lifecycle.com:
+    container_name: peer1.carserviceprovider.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer1.carserviceprovider.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer1.carserviceprovider.automobile-lifecycle.com:9551
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9551
+      - CORE_PEER_CHAINCODEADDRESS=peer1.carserviceprovider.automobile-lifecycle.com:9552
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9552
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.carserviceprovider.automobile-lifecycle.com:9551
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.carserviceprovider.automobile-lifecycle.com:9551
+      - CORE_PEER_LOCALMSPID=CarServiceProviderMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer1.carserviceprovider.automobile-lifecycle.com:10449
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/carserviceprovider.automobile-lifecycle.com/peers/peer1.carserviceprovider.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/carserviceprovider.automobile-lifecycle.com/peers/peer1.carserviceprovider.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.carserviceprovider.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9551:9551
+      - 10449:10449
+    networks:
+      - test
+
+
+  peer0.insuranceprovider.automobile-lifecycle.com:
+    container_name: peer0.insuranceprovider.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.insuranceprovider.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer0.insuranceprovider.automobile-lifecycle.com:9651
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9651
+      - CORE_PEER_CHAINCODEADDRESS=peer0.insuranceprovider.automobile-lifecycle.com:9652
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9652
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.insuranceprovider.automobile-lifecycle.com:9651
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.insuranceprovider.automobile-lifecycle.com:9651
+      - CORE_PEER_LOCALMSPID=InsuranceProviderMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.insuranceprovider.automobile-lifecycle.com:10450
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/insuranceprovider.automobile-lifecycle.com/peers/peer0.insuranceprovider.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/insuranceprovider.automobile-lifecycle.com/peers/peer0.insuranceprovider.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.insuranceprovider.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9651:9651
+      - 10450:10450
+    networks:
+      - test
+
+  peer1.insuranceprovider.automobile-lifecycle.com:
+    container_name: peer1.insuranceprovider.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer1.insuranceprovider.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer1.insuranceprovider.automobile-lifecycle.com:9751
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9751
+      - CORE_PEER_CHAINCODEADDRESS=peer1.insuranceprovider.automobile-lifecycle.com:9752
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9752
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.insuranceprovider.automobile-lifecycle.com:9751
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.insuranceprovider.automobile-lifecycle.com:9751
+      - CORE_PEER_LOCALMSPID=InsuranceProviderMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer1.insuranceprovider.automobile-lifecycle.com:10451
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/insuranceprovider.automobile-lifecycle.com/peers/peer1.insuranceprovider.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/insuranceprovider.automobile-lifecycle.com/peers/peer1.insuranceprovider.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.insuranceprovider.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9751:9751
+      - 10451:10451
+    networks:
+      - test
+
+  peer0.scrapmerchant.automobile-lifecycle.com:
+    container_name: peer0.scrapmerchant.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer0.scrapmerchant.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer0.scrapmerchant.automobile-lifecycle.com:9851
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9851
+      - CORE_PEER_CHAINCODEADDRESS=peer0.scrapmerchant.automobile-lifecycle.com:9852
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9852
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.scrapmerchant.automobile-lifecycle.com:9851
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.scrapmerchant.automobile-lifecycle.com:9851
+      - CORE_PEER_LOCALMSPID=ScrapMerchantMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.scrapmerchant.automobile-lifecycle.com:10452
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/scrapmerchant.automobile-lifecycle.com/peers/peer0.scrapmerchant.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/scrapmerchant.automobile-lifecycle.com/peers/peer0.scrapmerchant.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.scrapmerchant.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9851:9851
+      - 10452:10452
+    networks:
+      - test
+
+  peer1.scrapmerchant.automobile-lifecycle.com:
+    container_name: peer1.scrapmerchant.automobile-lifecycle.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=automobile-network
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variabes
+      - CORE_PEER_ID=peer1.scrapmerchant.automobile-lifecycle.com
+      - CORE_PEER_ADDRESS=peer1.scrapmerchant.automobile-lifecycle.com:9951
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9951
+      - CORE_PEER_CHAINCODEADDRESS=peer1.scrapmerchant.automobile-lifecycle.com:9952
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9952
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.scrapmerchant.automobile-lifecycle.com:9951
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.scrapmerchant.automobile-lifecycle.com:9951
+      - CORE_PEER_LOCALMSPID=ScrapMerchantMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer1.scrapmerchant.automobile-lifecycle.com:10453
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/scrapmerchant.automobile-lifecycle.com/peers/peer1.scrapmerchant.automobile-lifecycle.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/scrapmerchant.automobile-lifecycle.com/peers/peer1.scrapmerchant.automobile-lifecycle.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.scrapmerchant.automobile-lifecycle.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9951:9951
+      - 10453:10453
+    networks:
+      - test
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:latest
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../organizations:/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations
+        - ../scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+    depends_on:
+      - peer0.manufacturer.automobile-lifecycle.com
+      - peer1.manufacturer.automobile-lifecycle.com
+      - peer0.dealer.automobile-lifecycle.com
+      - peer1.dealer.automobile-lifecycle.com
+      - peer0.vehicleowner.automobile-lifecycle.com
+      - peer1.vehicleowner.automobile-lifecycle.com
+      - peer0.carserviceprovider.automobile-lifecycle.com
+      - peer1.carserviceprovider.automobile-lifecycle.com
+      - peer0.insuranceprovider.automobile-lifecycle.com
+      - peer1.insuranceprovider.automobile-lifecycle.com
+      - peer0.scrapmerchant.automobile-lifecycle.com
+      - peer1.scrapmerchant.automobile-lifecycle.com
+    networks:
+      - test
+

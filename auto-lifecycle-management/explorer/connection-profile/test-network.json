@@ -1,0 +1,48 @@
+{
+	"name": "test-network",
+	"version": "1.0.0",
+	"client": {
+		"tlsEnable": true,
+		"adminCredential": {
+			"id": "exploreradmin",
+			"password": "exploreradminpw"
+		},
+		"enableAuthentication": true,
+		"organization": "ManufacturerMSP",
+		"connection": {
+			"timeout": {
+				"peer": {
+					"endorser": "300"
+				},
+				"orderer": "300"
+			}
+		}
+	},
+	"channels": {
+		"autochannel": {
+			"peers": {
+				"peer0.manufacturer.automobile-lifecycle.com": {}
+			}
+		}
+	},
+	"organizations": {
+		"ManufacturerMSP": {
+			"mspid": "ManufacturerMSP",
+			"adminPrivateKey": {
+				"path": "/tmp/crypto/peerOrganizations/manufacturer.automobile-lifecycle.com/users/Admin@manufacturer.automobile-lifecycle.com/msp/keystore/f953c9637e59119d57c03a934fbd531dfacb9dddd701227bbe65b8b9a61c4e7c_sk"
+			},
+			"peers": ["peer0.manufacturer.automobile-lifecycle.com"],
+			"signedCert": {
+				"path": "/tmp/crypto/peerOrganizations/manufacturer.automobile-lifecycle.com/users/Admin@manufacturer.automobile-lifecycle.com/msp/signcerts/cert.pem"
+			}
+		}
+	},
+	"peers": {
+		"peer0.manufacturer.automobile-lifecycle.com": {
+			"tlsCACerts": {
+				"path": "/tmp/crypto/peerOrganizations/manufacturer.automobile-lifecycle.com/peers/peer0.manufacturer.automobile-lifecycle.com/tls/ca.crt"
+			},
+			"url": "grpcs://peer0.manufacturer.automobile-lifecycle.com:7051"
+		}
+	}
+}
