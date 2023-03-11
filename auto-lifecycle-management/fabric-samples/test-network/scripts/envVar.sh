@@ -8,7 +8,7 @@
 # This is a collection of bash functions used by different scripts
 
 # imports
-. scripts/utils.sh
+. /home/mayurpatil2211/Project/auto-lifecycle-management/fabric-samples/test-network/scripts/utils.sh
 
 export CORE_PEER_TLS_ENABLED=true
 export ORDERER_CA=${PWD}/organizations/ordererOrganizations/automobile-lifecycle.com/orderers/orderer.automobile-lifecycle.com/msp/tlscacerts/tlsca.automobile-lifecycle.com-cert.pem
@@ -37,49 +37,49 @@ setGlobals() {
     USING_ORG="${OVERRIDE_ORG}"
   fi
   infoln "Using organization ${USING_ORG}"
-  if [ $USING_ORG == "manufacturer" ]; then
+  if [[ $USING_ORG == "manufacturer" ]]; then
     export CORE_PEER_LOCALMSPID="ManufacturerMSP"
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_manufacturer_CA
     export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/manufacturer.automobile-lifecycle.com/users/Admin@manufacturer.automobile-lifecycle.com/msp
     export CORE_PEER_ADDRESS=localhost:7051
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER1_manufacturer_CA
     export CORE_PEER_ADDRESS=localhost:7151
-  elif [ $USING_ORG == "dealer" ]; then
+  elif [[ $USING_ORG == "dealer" ]]; then
     export CORE_PEER_LOCALMSPID="DealerMSP"
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_dealer_CA
     export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/dealer.automobile-lifecycle.com/users/Admin@dealer.automobile-lifecycle.com/msp
     export CORE_PEER_ADDRESS=localhost:9051
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER1_dealer_CA
     export CORE_PEER_ADDRESS=localhost:9151
-  elif [ $USING_ORG == "regulator" ]; then
+  elif [[ $USING_ORG == "regulator" ]]; then
     export CORE_PEER_LOCALMSPID="RegulatorMSP"
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_regulator_CA
     export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/regulator.automobile-lifecycle.com/users/Admin@regulator.automobile-lifecycle.com/msp
     export CORE_PEER_ADDRESS=localhost:13051
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER1_regulator_CA
     export CORE_PEER_ADDRESS=localhost:13151
-  elif [ $USING_ORG == "vehicleowner" ]; then
+  elif [[ $USING_ORG == "vehicleowner" ]]; then
     export CORE_PEER_LOCALMSPID="VehicleOwnerMSP"
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_vehicleowner_CA
     export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/vehicleowner.automobile-lifecycle.com/users/Admin@vehicleowner.automobile-lifecycle.com/msp
     export CORE_PEER_ADDRESS=localhost:9251
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER1_vehicleowner_CA
     export CORE_PEER_ADDRESS=localhost:9351
-  elif [ $USING_ORG == "carserviceprovider" ]; then
+  elif [[ $USING_ORG == "carserviceprovider" ]]; then
     export CORE_PEER_LOCALMSPID="CarServiceProviderMSP"
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_carserviceprovider_CA
     export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/carserviceprovider.automobile-lifecycle.com/users/Admin@carserviceprovider.automobile-lifecycle.com/msp
     export CORE_PEER_ADDRESS=localhost:9451
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER1_carserviceprovider_CA
     export CORE_PEER_ADDRESS=localhost:9551
-  elif [ $USING_ORG == "insuranceprovider" ]; then
+  elif [[ $USING_ORG == "insuranceprovider" ]]; then
     export CORE_PEER_LOCALMSPID="InsuranceProviderMSP"
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_insuranceprovider_CA
     export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/insuranceprovider.automobile-lifecycle.com/users/Admin@insuranceprovider.automobile-lifecycle.com/msp
     export CORE_PEER_ADDRESS=localhost:9651
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER1_insuranceprovider_CA
     export CORE_PEER_ADDRESS=localhost:9751
-  elif [ $USING_ORG == "scrapmerchant" ]; then
+  elif [[ $USING_ORG == "scrapmerchant" ]]; then
     export CORE_PEER_LOCALMSPID="ScrapMerchantMSP"
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_scrapmerchant_CA
     export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/scrapmerchant.automobile-lifecycle.com/users/Admin@scrapmerchant.automobile-lifecycle.com/msp

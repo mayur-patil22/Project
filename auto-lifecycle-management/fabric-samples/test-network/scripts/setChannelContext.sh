@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # import utils
-source scripts/envVar.sh
+source /home/mayurpatil2211/Project/auto-lifecycle-management/fabric-samples/test-network/scripts/envVar.sh
 
 ORG=$1
 
